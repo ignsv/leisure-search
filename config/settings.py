@@ -26,6 +26,13 @@ env = environ.Env(
     
     DJANGO_USE_DEBUG_TOOLBAR=(bool, False),
     DJANGO_TEST_RUN=(bool, False),
+
+    DB_ENGINE=(str, ''),
+    DB_NAME=(str, ''),
+    DB_USER=(str, ''),
+    DB_PASSWORD=(str, ''),
+    DB_HOST=(str, ''),
+    DB_PORT=(str, ''),
 )
 
 environ.Env.read_env()
@@ -53,7 +60,14 @@ USE_L10N = True
 USE_TZ = True
 
 DATABASES = {
-    'default': env.db('DJANGO_DATABASE_URL')
+    'default': {
+        'ENGINE': env('DB_ENGINE'),
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
+    }
 }
 
 DJANGO_APPS = (
@@ -64,6 +78,7 @@ DJANGO_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'django.contrib.gis',
 )
 
 THIRD_PARTY_APPS = (

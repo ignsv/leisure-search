@@ -41,6 +41,9 @@ htmlcov
 # Pycharm
 .idea
 
+# VirtualEnv
+/venv
+
 # Vim
 
 *~
