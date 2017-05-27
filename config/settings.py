@@ -9,7 +9,7 @@ import raven
 
 
 ROOT_DIR = environ.Path(__file__) - 2  # (/a/myfile.py - 2 = /)
-APPS_DIR = ROOT_DIR.path('leisure-search')
+APPS_DIR = ROOT_DIR.path('leisure_search')
 
 env = environ.Env(
     DJANGO_DEBUG=(bool, False),
@@ -18,7 +18,7 @@ env = environ.Env(
     DJANGO_ALLOWED_HOSTS=(list, []),
     DJANGO_STATIC_ROOT=(str, str(APPS_DIR('staticfiles'))),
     DJANGO_MEDIA_ROOT=(str, str(APPS_DIR('media'))),
-    DJANGO_DATABASE_URL=(str, 'postgis:///leisure-search'),
+    DJANGO_DATABASE_URL=(str, 'postgis:///leisure_search'),
     DJANGO_EMAIL_URL=(environ.Env.email_url_config, 'consolemail://'),
     DJANGO_DEFAULT_FROM_EMAIL=(str, 'admin@example.com'),
     DJANGO_EMAIL_BACKEND=(str, 'django.core.mail.backends.smtp.EmailBackend'),
@@ -93,7 +93,7 @@ THIRD_PARTY_APPS = (
 )
 
 LOCAL_APPS = (
-    'leisure-search.users',
+    'leisure_search.users',
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

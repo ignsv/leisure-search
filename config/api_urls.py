@@ -11,5 +11,5 @@ schema_view = get_swagger_view(title='PopulationExplorer API')
 urlpatterns = [
     url(r'doc/$', schema_view),
     url(r'rest-auth/', include('rest_auth.urls')),
-    #url(r'users/', include('leisure-search.users.api_urls')),
+    url(r'users/', include('leisure_search.users.api_urls')),
 ]

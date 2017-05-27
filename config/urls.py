@@ -14,7 +14,7 @@ urlpatterns = [
     #url(r'^$', TemplateView.as_view(template_name='base.html'), name="home"),
     # Django Admin, use {% url 'admin:index' %}
     url(settings.ADMIN_URL, include(admin.site.urls)),
-    url(r'^users/', include("leisure-search.users.urls", namespace="users")),
+    url(r'^users/', include("leisure_search.users.urls", namespace="users")),
     url(r'^accounts/', include('allauth.urls')),
     # Your stuff: custom urls includes go here
     url('^api/', include('config.api_urls', namespace='api')),
