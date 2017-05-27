@@ -78,7 +78,6 @@ DJANGO_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
-    'django.contrib.gis',
 )
 
 THIRD_PARTY_APPS = (
@@ -86,6 +85,11 @@ THIRD_PARTY_APPS = (
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_auth',
+    'rest_framework_swagger',
+    'solo',
 )
 
 LOCAL_APPS = (
@@ -219,6 +223,30 @@ LOGGING = {
         },
     }
 }
+
+# SWAGGER SETTIGNS
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'basic': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization',
+        }
+    },
+    'SHOW_REQUEST_HEADERS': True
+}
+
+# DRF CONFIG
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50
+}
+
 
 if os.environ.get('SENTRY_DSN'):
     INSTALLED_APPS += ('raven.contrib.django.raven_compat',)
