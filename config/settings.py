@@ -94,6 +94,7 @@ THIRD_PARTY_APPS = (
 
 LOCAL_APPS = (
     'leisure_search.users',
+    'leisure_search.leisure.apps.LeisureConfig'
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
