@@ -1,18 +1,15 @@
-from django.db import models
-
-# Create your models here.
 # -*- coding: utf-8 -*-
 
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.conf import settings
+from leisure_search.users.utils import LIKE_RATING_CHOICES
 
 from model_utils.models import TimeStampedModel
-from model_utils.choices import Choices
 
 
 def institution_photo_directory_path(instance, filename):
-    return 'photos/{0}/{1}'.format(instance.id, filename)
+    return 'photos/{0}/{1}'.format(instance.name, filename)
 
 
 @python_2_unicode_compatible
@@ -60,3 +57,37 @@ class Institution(TimeStampedModel):
     def __str__(self):
         return self.name
 
+
+@python_2_unicode_compatible
+class Like(TimeStampedModel):
+
+    rank = models.PositiveSmallIntegerField('Like type', choices=LIKE_RATING_CHOICES,
+                                            default=LIKE_RATING_CHOICES.ONE)
+    user = models.ForeignKey('users.User', related_name='likes', null=True, on_delete=models.SET_NULL)
+    institution = models.ForeignKey(Institution, related_name='likes', null=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        verbose_name = 'Like'
+        verbose_name_plural = 'Likes'
+
+    def __str__(self):
+        return "{}_{}".format(self.user.get_short_name(), self.created)
+
+
+@python_2_unicode_compatible
+class Stat(TimeStampedModel):
+
+    rank_for_search = models.PositiveSmallIntegerField('Like search type', choices=LIKE_RATING_CHOICES,
+                                            default=LIKE_RATING_CHOICES.ONE)
+    user = models.ForeignKey('users.User', related_name='stats', null=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey(Category, related_name='stats', null=True, on_delete=models.SET_NULL)
+
+    latitude_start_search = models.DecimalField(max_digits=19, decimal_places=10, default=0)
+    longitude_start_search = models.DecimalField(max_digits=19, decimal_places=10, default=0)
+
+    class Meta:
+        verbose_name = 'Stat'
+        verbose_name_plural = 'Stats'
+
+    def __str__(self):
+        return "{}_{}_{}".format(self.user.get_short_name(), self.created, self.rank_for_search)
