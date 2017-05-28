@@ -18,7 +18,8 @@ class CityAdmin(admin.ModelAdmin):
 
 
 class InstitutionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name']
+    list_display = ['id', 'name', 'published']
+    list_editable = ('published',)
 
 
 class LikeAdmin(admin.ModelAdmin):

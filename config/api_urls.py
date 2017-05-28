@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'doc/$', schema_view),
     url(r'rest-auth/', include('rest_auth.urls')),
     url(r'users/', include('leisure_search.users.api_urls')),
+    url(r'leisure/', include('leisure_search.leisure.api_urls')),
 ]

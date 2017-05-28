@@ -9,7 +9,7 @@ from model_utils.models import TimeStampedModel
 
 
 def institution_photo_directory_path(instance, filename):
-    return 'photos/{0}/{1}'.format(instance.name, filename)
+    return 'photos/{0}'.format(filename)
 
 
 @python_2_unicode_compatible
