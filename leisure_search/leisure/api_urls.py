@@ -11,7 +11,8 @@ router.register(r'category', api.CategoryApiView, base_name='api_leisure_categor
 router.register(r'institution', api.InstitutionApiView, base_name='api_leisure_institution')
 
 urlpatterns = [
-   url(r'^city/list$', api.CityApiView.as_view(), name='api_leisure_city'),
+    url(r'^city/list$', api.CityApiView.as_view(), name='api_leisure_city'),
+    url(r'^search/closer$', api.CloserInstitutionApiView.as_view(), name='api_search_closer'),
 ]
 
 urlpatterns += router.urls

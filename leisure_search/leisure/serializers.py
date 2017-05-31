@@ -9,6 +9,7 @@ from rest_framework import serializers
 Category = apps.get_model('leisure', 'Category')
 City = apps.get_model('leisure', 'City')
 Institution = apps.get_model('leisure', 'Institution')
+Stat = apps.get_model('leisure', 'Stat')
 
 
 class CategorySimpleSerializer(serializers.ModelSerializer):
@@ -64,3 +65,56 @@ class InstitutionCreateSerializer(serializers.ModelSerializer):
         institution.categories = categories_ids
         institution.save()
         return institution
+
+
+class StatInstitutionSimpleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Stat
+        fields = ('id', 'rank_for_search', 'user', 'category', 'latitude_start_search', 'longitude_start_search')
+
+
+class StatInstitutionCloserCreateSerializer(serializers.ModelSerializer):
+
+    latitude_start_search = serializers.DecimalField(required=True, decimal_places=10, max_digits=19)
+    longitude_start_search = serializers.DecimalField(required=True, decimal_places=10, max_digits=19)
+
+    class Meta:
+        model = Stat
+        fields = ('rank_for_search', 'category', 'latitude_start_search', 'longitude_start_search', )
+
+    def validate_category(self, value):
+        if value is None:
+            raise serializers.ValidationError('No category in request')
+        return value
+
+    def validate_rank_for_search(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError('Rank must be in 1-5')
+        return value
+
+    def create(self, validated_data):
+
+        data = copy.deepcopy(validated_data)
+        data['user'] = self.context['request'].user
+
+        instance = Stat.objects.create(**data)
+
+        return instance
+
+
+class StatInstitutionRadiusCreateSerializer(serializers.ModelSerializer):
+
+    latitude_start_search = serializers.DecimalField(required=True, decimal_places=10, max_digits=19)
+    longitude_start_search = serializers.DecimalField(required=True, decimal_places=10, max_digits=19)
+
+    radius = serializers.FloatField(required=True)
+
+    class Meta:
+        model = Stat
+        fields = ('rank_for_search', 'category', 'radius', 'latitude_start_search', 'longitude_start_search',)
+
+    # TODO
+
+    def create(self, validated_data):
+        pass
