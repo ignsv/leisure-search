@@ -65,3 +65,10 @@ leisure-search/media/
 
 #vagrant
 .vagrant
+
+#photos
+photos/
+
+#front-end build
+dist/
+.tmp/
