@@ -23,7 +23,7 @@ env = environ.Env(
     DJANGO_DEFAULT_FROM_EMAIL=(str, 'admin@example.com'),
     DJANGO_EMAIL_BACKEND=(str, 'django.core.mail.backends.smtp.EmailBackend'),
     DJANGO_SERVER_EMAIL=(str, 'root@localhost.com'),
-    
+
     DJANGO_USE_DEBUG_TOOLBAR=(bool, False),
     DJANGO_TEST_RUN=(bool, False),
 
@@ -90,6 +90,7 @@ THIRD_PARTY_APPS = (
     'rest_auth',
     'rest_framework_swagger',
     'solo',
+    'corsheaders',
 )
 
 LOCAL_APPS = (
@@ -103,6 +104,8 @@ AUTH_USER_MODEL = 'users.User'
 ADMIN_URL = r'^admin/'
 
 MIDDLEWARE_CLASSES = (
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -110,6 +113,9 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 EMAIL_URL = env.email_url('DJANGO_EMAIL_URL')
