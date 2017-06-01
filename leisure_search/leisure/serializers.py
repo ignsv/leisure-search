@@ -10,6 +10,7 @@ Category = apps.get_model('leisure', 'Category')
 City = apps.get_model('leisure', 'City')
 Institution = apps.get_model('leisure', 'Institution')
 Stat = apps.get_model('leisure', 'Stat')
+Like = apps.get_model('leisure', 'Like')
 
 
 class CategorySimpleSerializer(serializers.ModelSerializer):
@@ -118,3 +119,54 @@ class StatInstitutionRadiusCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         pass
+
+
+class LikeRetrieveSerializer(serializers.ModelSerializer):
+
+    institution = InstitutionRetrieveSerializer(read_only=True)
+
+    class Meta:
+        model = Like
+        fields = ('id', 'rank', 'institution',)
+
+
+class LikeCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Like
+        fields = ('rank', 'institution',)
+
+    def validate_institution(self, value):
+        if value is None:
+            raise serializers.ValidationError('No institution in request')
+        return value
+
+    def validate_rank(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError('Rank must be in 1-5')
+        return value
+
+    def validate(self, attrs):
+
+        if not attrs['institution'].published:
+            raise serializers.ValidationError('This institution have not published yet')
+
+        like = Like.objects.filter(user=self.context['request'].user, institution=attrs['institution']).first()
+
+        if like:
+            raise serializers.ValidationError('You have already vote for this institution')
+
+        return attrs
+
+    def create(self, validated_data):
+
+        data = copy.deepcopy(validated_data)
+        data['user'] = self.context['request'].user
+
+        instance = Like.objects.create(**data)
+
+        return instance
+
+    def to_representation(self, instance):
+        return_serializer = LikeRetrieveSerializer(instance)
+        return return_serializer.data

@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, DestroyModelMixin, CreateModelMixin
 
 from .serializers import CategorySimpleSerializer, InstitutionCreateSerializer, InstitutionRetrieveSerializer, \
-    CitySimpleSerializer, StatInstitutionCloserCreateSerializer
+    CitySimpleSerializer, StatInstitutionCloserCreateSerializer, LikeCreateSerializer, LikeRetrieveSerializer
 
 #from .permissions import CompanyOwnerPermission, UserOfferPermission
 
@@ -344,3 +344,86 @@ class CloserInstitutionApiView(CreateAPIView):
             return Response(return_serializer.data, status=status.HTTP_200_OK, headers=headers)
 
         return Response("No institution for return", status=status.HTTP_200_OK, headers=headers)
+
+
+class LikeCreateApiView(CreateAPIView):
+    """
+        **Create like api view**
+
+        **Required data**
+        <pre>
+            {
+              "institution": "string",
+              "rank": "string"
+            }
+        </pre>
+
+        **Success:** status_code: 201
+        <pre>
+            {
+                "id": 2,
+                "rank": 3,
+                "institution": {
+                    "id": 5,
+                    "name": "Francua",
+                    "photo": "/media/photos/burjak3.jpg",
+                    "city": {
+                        "id": 1,
+                        "name": "Kiev"
+                    },
+                    "address": "Kiev, Kiev",
+                    "categories": [
+                        {
+                            "id": 1,
+                            "name": "cafe"
+                        }
+                    ],
+                    "latitude": "0.0000000000",
+                    "longitude": "0.0000000000"
+                }
+            }
+        </pre>
+
+        **Error:** status_code: 400
+
+        *Non-field errors*:
+        <pre>
+            {
+                "non_field_errors": [
+                    "Validation errors",
+                     "You have already vote for this institution",
+                ]
+            }
+        </pre>
+
+        *Field errors*:
+        <pre>
+            {
+                "rank_for_search": [
+                    "Rank must be in 1-5!"
+                ],
+                "institution": [
+                    "No institution in request"
+                ],
+            }
+        </pre>
+
+        """
+
+    serializer_class = LikeCreateSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'user': self.request.user,
+        }
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
