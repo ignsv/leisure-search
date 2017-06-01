@@ -7,11 +7,13 @@ from django.db.models import Q, When, Case, Value, BooleanField, Count, CharFiel
 from django.utils.translation import ugettext as _
 
 from django_filters.rest_framework import DjangoFilterBackend
+from leisure_search.leisure.utils import return_list_of_distance
 from rest_framework import filters
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Avg
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, DestroyModelMixin, CreateModelMixin
@@ -336,14 +338,19 @@ class CloserInstitutionApiView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        data = request.data
-        # TODO search intitution
-        institution = Institution.objects.first()
-        if institution:
-            return_serializer = self.institution_retrieve(institution)
+        data = serializer.validated_data
+        # search intitution
+        institution_queryset = Institution.objects.annotate(mean_rank=Avg('likes__rank')).\
+            filter(categories__in=[data['category'].id, ], mean_rank__gte=data['rank_for_search']).distinct()
+
+        list_result = return_list_of_distance(data['latitude_start_search'], data['longitude_start_search'],
+                                              institution_queryset)
+
+        if list_result:
+            return_serializer = self.institution_retrieve(list_result[0][0])
             return Response(return_serializer.data, status=status.HTTP_200_OK, headers=headers)
 
-        return Response("No institution for return", status=status.HTTP_200_OK, headers=headers)
+        return Response({"result": "No institution for return"}, status=status.HTTP_200_OK, headers=headers)
 
 
 class LikeCreateApiView(CreateAPIView):
@@ -427,3 +434,90 @@ class LikeCreateApiView(CreateAPIView):
         headers = self.get_success_headers(serializer.data)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class RadiusInstitutionApiView(CreateAPIView):
+    """
+        **Search closer institution by rank and category**
+
+        **Required data**
+        <pre>
+            {
+            "rank_for_search": *int* 1-5,
+            "category": *int*,fk for category
+            "latitude_start_search": *decimal*,
+            "longitude_start_search": *decimal*
+            }
+        </pre>
+
+        **Success:** status_code: 200
+        <pre>
+            {
+                "id": 5,
+                "name": "Francua",
+                "photo": "/media/photos/burjak3.jpg",
+                "city": {
+                    "id": 1,
+                    "name": "Kiev"
+                },
+                "address": "Kiev, Kiev",
+                "categories": [
+                    {
+                        "id": 1,
+                        "name": "cafe"
+                    }
+                ],
+                "latitude": "0.0000000000",
+                "longitude": "0.0000000000"
+            }
+        </pre>
+
+        **Error:** status_code: 400
+
+        *Non-field errors*:
+        <pre>
+            {
+                "non_field_errors": [
+                    "Validation errors"
+                ]
+            }
+        </pre>
+
+        *Field errors*:
+        <pre>
+            {
+                "rank_for_search": [
+                    "Rank must be in 1-5!"
+                ],
+                "category": [
+                    "No category in request"
+                ],
+            }
+        </pre>
+
+        """
+
+    serializer_class = StatInstitutionCloserCreateSerializer
+    permission_classes = (IsAuthenticated,)
+    institution_retrieve = InstitutionRetrieveSerializer
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'user': self.request.user,
+        }
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        data = request.data
+        # TODO search intitution
+        institution = Institution.objects.first()
+        if institution:
+            return_serializer = self.institution_retrieve(institution)
+            return Response(return_serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+        return Response("No institution for return", status=status.HTTP_200_OK, headers=headers)
