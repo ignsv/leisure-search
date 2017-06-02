@@ -90,7 +90,7 @@ class StatInstitutionCloserCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_rank_for_search(self, value):
-        if value < 1 or value > 5:
+        if value < 0 or value > 5:
             raise serializers.ValidationError('Rank must be in 1-5')
         return value
 
@@ -121,7 +121,7 @@ class StatInstitutionRadiusCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_rank_for_search(self, value):
-        if value < 1 or value > 5:
+        if value < 0 or value > 5:
             raise serializers.ValidationError('Rank must be in 1-5')
         return value
 
@@ -166,7 +166,7 @@ class LikeCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_rank(self, value):
-        if value < 1 or value > 5:
+        if value < 0 or value > 5:
             raise serializers.ValidationError('Rank must be in 1-5')
         return value
 

@@ -62,7 +62,7 @@ class Institution(TimeStampedModel):
 class Like(TimeStampedModel):
 
     rank = models.PositiveSmallIntegerField('Like type', choices=LIKE_RATING_CHOICES,
-                                            default=LIKE_RATING_CHOICES.ONE)
+                                            default=LIKE_RATING_CHOICES.ZERO)
     user = models.ForeignKey('users.User', related_name='likes', null=True, on_delete=models.SET_NULL)
     institution = models.ForeignKey(Institution, related_name='likes', null=True, on_delete=models.SET_NULL)
 
@@ -78,7 +78,7 @@ class Like(TimeStampedModel):
 class Stat(TimeStampedModel):
 
     rank_for_search = models.PositiveSmallIntegerField('Like search type', choices=LIKE_RATING_CHOICES,
-                                            default=LIKE_RATING_CHOICES.ONE)
+                                            default=LIKE_RATING_CHOICES.ZERO)
     user = models.ForeignKey('users.User', related_name='stats', null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(Category, related_name='stats', null=True, on_delete=models.SET_NULL)
 

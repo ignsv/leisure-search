@@ -17,6 +17,8 @@ from django.db.models import Avg
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, DestroyModelMixin, CreateModelMixin
+from django.db.models.functions import Coalesce
+from django.db.models import Sum, Value as V
 
 from .serializers import CategorySimpleSerializer, InstitutionCreateSerializer, InstitutionRetrieveSerializer, \
     CitySimpleSerializer, StatInstitutionCloserCreateSerializer, LikeCreateSerializer, LikeRetrieveSerializer, \
@@ -341,7 +343,7 @@ class CloserInstitutionApiView(CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         data = serializer.validated_data
         # search intitution
-        institution_queryset = Institution.objects.annotate(mean_rank=Avg('likes__rank')).\
+        institution_queryset = Institution.objects.annotate(mean_rank=Coalesce(Avg('likes__rank'), V(0))).\
             filter(categories__in=[data['category'].id, ], mean_rank__gte=data['rank_for_search'], published=True)\
             .distinct()
 
@@ -509,13 +511,12 @@ class RadiusInstitutionApiView(CreateAPIView):
         headers = self.get_success_headers(serializer.data)
         data = serializer.validated_data
         # search intitution
-        institution_queryset = Institution.objects.annotate(mean_rank=Avg('likes__rank')). \
+        institution_queryset = Institution.objects.annotate(mean_rank=Coalesce(Avg('likes__rank'), V(0))). \
             filter(categories__in=[data['category'].id, ], mean_rank__gte=data['rank_for_search'], published=True).\
             distinct()
 
         list_result = return_list_of_distance(data['latitude_start_search'], data['longitude_start_search'],
                                               institution_queryset)
-
         if list_result:
             institution_ids = [item[0].id for item in list_result if item[1]<data['radius']]
             return Response({"results": institution_ids}, status=status.HTTP_200_OK, headers=headers)
