@@ -19,7 +19,8 @@ from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, DestroyModelMixin, CreateModelMixin
 
 from .serializers import CategorySimpleSerializer, InstitutionCreateSerializer, InstitutionRetrieveSerializer, \
-    CitySimpleSerializer, StatInstitutionCloserCreateSerializer, LikeCreateSerializer, LikeRetrieveSerializer
+    CitySimpleSerializer, StatInstitutionCloserCreateSerializer, LikeCreateSerializer, LikeRetrieveSerializer, \
+    StatInstitutionRadiusCreateSerializer
 
 #from .permissions import CompanyOwnerPermission, UserOfferPermission
 
@@ -341,7 +342,8 @@ class CloserInstitutionApiView(CreateAPIView):
         data = serializer.validated_data
         # search intitution
         institution_queryset = Institution.objects.annotate(mean_rank=Avg('likes__rank')).\
-            filter(categories__in=[data['category'].id, ], mean_rank__gte=data['rank_for_search']).distinct()
+            filter(categories__in=[data['category'].id, ], mean_rank__gte=data['rank_for_search'], published=True)\
+            .distinct()
 
         list_result = return_list_of_distance(data['latitude_start_search'], data['longitude_start_search'],
                                               institution_queryset)
@@ -350,7 +352,7 @@ class CloserInstitutionApiView(CreateAPIView):
             return_serializer = self.institution_retrieve(list_result[0][0])
             return Response(return_serializer.data, status=status.HTTP_200_OK, headers=headers)
 
-        return Response({"result": "No institution for return"}, status=status.HTTP_200_OK, headers=headers)
+        return Response({"result": "No institution for return"}, status=status.HTTP_404_NOT_FOUND, headers=headers)
 
 
 class LikeCreateApiView(CreateAPIView):
@@ -438,11 +440,12 @@ class LikeCreateApiView(CreateAPIView):
 
 class RadiusInstitutionApiView(CreateAPIView):
     """
-        **Search closer institution by rank and category**
+        **Search in radius institutions by rank and category**
 
         **Required data**
         <pre>
             {
+            "radius": *float* in meters
             "rank_for_search": *int* 1-5,
             "category": *int*,fk for category
             "latitude_start_search": *decimal*,
@@ -452,24 +455,13 @@ class RadiusInstitutionApiView(CreateAPIView):
 
         **Success:** status_code: 200
         <pre>
-            {
-                "id": 5,
-                "name": "Francua",
-                "photo": "/media/photos/burjak3.jpg",
-                "city": {
-                    "id": 1,
-                    "name": "Kiev"
-                },
-                "address": "Kiev, Kiev",
-                "categories": [
-                    {
-                        "id": 1,
-                        "name": "cafe"
-                    }
-                ],
-                "latitude": "0.0000000000",
-                "longitude": "0.0000000000"
-            }
+        {
+            "results": [
+                7,
+                5
+                ...
+            ]
+        }
         </pre>
 
         **Error:** status_code: 400
@@ -497,9 +489,12 @@ class RadiusInstitutionApiView(CreateAPIView):
 
         """
 
-    serializer_class = StatInstitutionCloserCreateSerializer
+    serializer_class = StatInstitutionRadiusCreateSerializer
     permission_classes = (IsAuthenticated,)
     institution_retrieve = InstitutionRetrieveSerializer
+
+    def get_queryset(self):
+        return None
 
     def get_serializer_context(self):
         return {
@@ -508,16 +503,21 @@ class RadiusInstitutionApiView(CreateAPIView):
         }
 
     def create(self, request, *args, **kwargs):
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        data = request.data
-        # TODO search intitution
-        institution = Institution.objects.first()
-        if institution:
-            return_serializer = self.institution_retrieve(institution)
-            return Response(return_serializer.data, status=status.HTTP_200_OK, headers=headers)
+        data = serializer.validated_data
+        # search intitution
+        institution_queryset = Institution.objects.annotate(mean_rank=Avg('likes__rank')). \
+            filter(categories__in=[data['category'].id, ], mean_rank__gte=data['rank_for_search'], published=True).\
+            distinct()
 
-        return Response("No institution for return", status=status.HTTP_200_OK, headers=headers)
+        list_result = return_list_of_distance(data['latitude_start_search'], data['longitude_start_search'],
+                                              institution_queryset)
+
+        if list_result:
+            institution_ids = [item[0].id for item in list_result if item[1]<data['radius']]
+            return Response({"results": institution_ids}, status=status.HTTP_200_OK, headers=headers)
+
+        return Response({"result": "No institution for return"}, status=status.HTTP_404_NOT_FOUND, headers=headers)
