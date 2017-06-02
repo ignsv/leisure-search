@@ -23,7 +23,7 @@ class InstitutionAdmin(admin.ModelAdmin):
 
 
 class LikeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'rank']
+    list_display = ['id', 'rank', 'institution']
 
 
 class StatAdmin(admin.ModelAdmin):

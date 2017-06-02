@@ -113,12 +113,36 @@ class StatInstitutionRadiusCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Stat
-        fields = ('rank_for_search', 'category', 'radius', 'latitude_start_search', 'longitude_start_search',)
+        fields = ('rank_for_search', 'category', 'radius', 'latitude_start_search', 'longitude_start_search', )
 
-    # TODO
+    def validate_category(self, value):
+        if value is None:
+            raise serializers.ValidationError('No category in request')
+        return value
+
+    def validate_rank_for_search(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError('Rank must be in 1-5')
+        return value
+
+    def validate_radius(self, value):
+        if value < 0:
+            raise serializers.ValidationError('Radius less than 0')
+        return value
 
     def create(self, validated_data):
-        pass
+
+        data = copy.deepcopy(validated_data)
+        data['user'] = self.context['request'].user
+        data.pop('radius')
+
+        instance = Stat.objects.create(**data)
+
+        return instance
+
+    def to_representation(self, instance):
+        return_serializer = StatInstitutionSimpleSerializer(instance)
+        return return_serializer.data
 
 
 class LikeRetrieveSerializer(serializers.ModelSerializer):
