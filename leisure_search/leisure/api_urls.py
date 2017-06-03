@@ -11,7 +11,12 @@ router.register(r'category', api.CategoryApiView, base_name='api_leisure_categor
 router.register(r'institution', api.InstitutionApiView, base_name='api_leisure_institution')
 
 urlpatterns = [
-   url(r'^city/list$', api.CityApiView.as_view(), name='api_leisure_city'),
+    url(r'^city/list$', api.CityApiView.as_view(), name='api_leisure_city'),
+    url(r'^search/closer$', api.CloserInstitutionApiView.as_view(), name='api_search_closer'),
+    url(r'^search/radius', api.RadiusInstitutionApiView.as_view(), name='api_search_radius'),
+    url(r'^create/like$', api.LikeCreateApiView.as_view(), name='api_create_like'),
+    url(r'^institution/photo/(?P<pk>\d+)$', api.UpdatePhotoInstitutionApiView.as_view(), name='api_update_like'),
+    url(r'^temp-photo$', api.CreateTempPhotoApiView.as_view(), name='api_create_temp_photo'),
 ]
 
 urlpatterns += router.urls

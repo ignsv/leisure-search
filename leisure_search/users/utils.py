@@ -5,6 +5,7 @@ PASSWORD_FIELD_ERRORS = {
 }
 
 LIKE_RATING_CHOICES = Choices(
+    (0, 'ZERO', 'Zero',),
     (1, 'ONE', 'One',),
     (2, 'TWO', 'two',),
     (3, 'THREE', 'three',),

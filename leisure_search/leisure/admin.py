@@ -6,7 +6,7 @@ City = apps.get_model('leisure', 'City')
 Institution = apps.get_model('leisure', 'Institution')
 Like = apps.get_model('leisure', 'Like')
 Stat = apps.get_model('leisure', 'Stat')
-
+TempPhoto = apps.get_model('leisure', 'TempPhoto')
 
 # Register your models here.
 class CategoryAdmin(admin.ModelAdmin):
@@ -23,7 +23,7 @@ class InstitutionAdmin(admin.ModelAdmin):
 
 
 class LikeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'rank']
+    list_display = ['id', 'rank', 'institution']
 
 
 class StatAdmin(admin.ModelAdmin):
@@ -35,3 +35,4 @@ admin.site.register(City, CityAdmin)
 admin.site.register(Institution, InstitutionAdmin)
 admin.site.register(Like, LikeAdmin)
 admin.site.register(Stat, StatAdmin)
+admin.site.register(TempPhoto)
