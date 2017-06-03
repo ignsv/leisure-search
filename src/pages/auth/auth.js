@@ -5,14 +5,14 @@ class AuthPage {
         return new AuthPage(...injections);
     }
 
-    constructor($http) {
+    constructor($http, $state, $route) {
         this.$http = $http;
+        this.$state = $state;
         this.signIn = {};
         this.signUp = {};
     }
 
-    enter($http, user) {
-        console.log(user);
+    enter($http, $state, user) {
         $http({
             method: 'POST',
             url: 'http://localhost:8000/' + 'api/rest-auth/login/',
@@ -24,11 +24,19 @@ class AuthPage {
                 password: user.password
             }
         }).then(response => {
-          console.log(response);
+            localStorage.setItem('token', response.data.key);
+            localStorage.setItem('email', user.email);
+            $state.go('home');
         });
     }
 
-    registration($http, newUser) {
+    registration($http, $state, newUser) {
+        let bDMonth = (newUser.bD.getMonth() < 10) ? '-0' : '-';
+        bDMonth += newUser.bD.getMonth();
+        let bDDate = (newUser.bD.getDate() < 10) ? '-0' : '-';
+        bDDate += newUser.bD.getDate()
+        const bD = newUser.bD.getFullYear() + bDMonth + bDDate;
+
         $http({
             method: 'POST',
             url: 'http://localhost:8000/' + 'api/users/register/',
@@ -39,18 +47,19 @@ class AuthPage {
                 email: newUser.email,
                 first_name: newUser.first,
                 last_name: newUser.last,
-                birth_date: newUser.bD,
+                birth_date: bD,
                 gender: Number(newUser.gender),
                 password: newUser.password
             }
         }).then(response => {
-            console.log(response);
+            $state.reload();
         });
     }
 }
 
 AuthPage.factory.$inject = [
-  '$http'
+    '$http',
+    '$state'
 ];
 
 export default app.component('authPage', {

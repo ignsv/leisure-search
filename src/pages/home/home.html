@@ -1,17 +1,14 @@
 <app class="home-page">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-xs-12">
-                <h1>Angular 1.x Boilerplate</h1>
+            <div class="col-xs-12 col-md-8">
+                <ui-gmap-google-map center='$ctrl.map.center' zoom='$ctrl.map.zoom'>
+                    <ui-gmap-marker coords='$ctrl.curentCoords'></ui-gmap-marker>
+                </ui-gmap-google-map>
             </div>
-            <div class="col-xs-12 col-md-6">
+            <div class="col-xs-12 col-md-4">
                 <div class="jumbotron">
-                    <h2>Features:</h2>
-                    <ul class="features-list">
-                        <li ng-repeat="feature in $ctrl.features">
-                            {{feature}}
-                        </li>
-                    </ul>
+
                 </div>
             </div>
         </div>
