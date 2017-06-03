@@ -42,7 +42,7 @@ class City(models.Model):
 class Institution(TimeStampedModel):
 
     name = models.CharField(max_length=255)
-    photo = models.ImageField(verbose_name='Photo', upload_to=institution_photo_directory_path,)
+    photo = models.ImageField(verbose_name='Photo', upload_to=institution_photo_directory_path, null=True, blank=True)
     city = models.ForeignKey(City, related_name='institutions', on_delete=models.CASCADE)
     address = models.CharField(max_length=255, null=True, blank=True)
     categories = models.ManyToManyField('leisure.Category', verbose_name='Categories', related_name='institutions')
@@ -78,7 +78,7 @@ class Like(TimeStampedModel):
 class Stat(TimeStampedModel):
 
     rank_for_search = models.PositiveSmallIntegerField('Like search type', choices=LIKE_RATING_CHOICES,
-                                            default=LIKE_RATING_CHOICES.ZERO)
+                                                       default=LIKE_RATING_CHOICES.ZERO)
     user = models.ForeignKey('users.User', related_name='stats', null=True, on_delete=models.SET_NULL)
     category = models.ForeignKey(Category, related_name='stats', null=True, on_delete=models.SET_NULL)
 
@@ -91,3 +91,12 @@ class Stat(TimeStampedModel):
 
     def __str__(self):
         return "{}_{}_{}".format(self.user.get_short_name(), self.created, self.rank_for_search)
+
+
+@python_2_unicode_compatible
+class TempPhoto(TimeStampedModel):
+
+    photo = models.ImageField(verbose_name='Photo', upload_to=institution_photo_directory_path)
+
+    def __str__(self):
+        return self.photo.path
