@@ -91,3 +91,12 @@ class Stat(TimeStampedModel):
 
     def __str__(self):
         return "{}_{}_{}".format(self.user.get_short_name(), self.created, self.rank_for_search)
+
+
+@python_2_unicode_compatible
+class TempPhoto(TimeStampedModel):
+
+    photo = models.ImageField(verbose_name='Photo', upload_to=institution_photo_directory_path)
+
+    def __str__(self):
+        return self.photo.path

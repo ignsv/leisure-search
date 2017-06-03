@@ -11,7 +11,7 @@ from leisure_search.leisure.utils import return_list_of_distance
 from rest_framework import filters
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.generics import ListAPIView, CreateAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Avg
 from rest_framework.decorators import detail_route, list_route
@@ -22,13 +22,14 @@ from django.db.models import Sum, Value as V
 
 from .serializers import CategorySimpleSerializer, InstitutionCreateSerializer, InstitutionRetrieveSerializer, \
     CitySimpleSerializer, StatInstitutionCloserCreateSerializer, LikeCreateSerializer, LikeRetrieveSerializer, \
-    StatInstitutionRadiusCreateSerializer
+    StatInstitutionRadiusCreateSerializer, UpdatePhotoInstituteSerializer, TempPhotoSerializer
 
 #from .permissions import CompanyOwnerPermission, UserOfferPermission
 
 Category = apps.get_model('leisure', 'Category')
 City = apps.get_model('leisure', 'City')
 Institution = apps.get_model('leisure', 'Institution')
+TempPhoto = apps.get_model('leisure', 'TempPhoto')
 
 
 class CityApiView(ListAPIView):
@@ -158,8 +159,7 @@ class CategoryApiView(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         return Response(serializer.data)
 
 
-class InstitutionApiView(RetrieveModelMixin, ListModelMixin, GenericViewSet):
-#class InstitutionApiView(RetrieveModelMixin, ListModelMixin, CreateModelMixin, GenericViewSet):
+class InstitutionApiView(RetrieveModelMixin, ListModelMixin, CreateModelMixin, GenericViewSet):
 
     serializer_class = InstitutionRetrieveSerializer
     create_serializer = InstitutionCreateSerializer
@@ -175,6 +175,11 @@ class InstitutionApiView(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
     def get_queryset(self):
         return Institution.objects.filter(published=True)
+
+    def get_serializer_class(self):
+        if self.action=='create':
+            return self.create_serializer
+        return self.serializer_class
 
     def list(self, request, *args, **kwargs):
         """
@@ -194,7 +199,7 @@ class InstitutionApiView(RetrieveModelMixin, ListModelMixin, GenericViewSet):
                 {
                   "id": 2,
                   "name": "Francua",
-                  "photo": "http://localhost:8000/media/photos/Francua/burjak4.jpg",
+                  "photo": "http://localhost:8000/media/photos/dweew.jpg",
                   "city": {
                     "id": 1,
                     "name": "Kiev"
@@ -231,7 +236,7 @@ class InstitutionApiView(RetrieveModelMixin, ListModelMixin, GenericViewSet):
             {
               "id": 2,
               "name": "Francua",
-              "photo": "http://localhost:8000/media/photos/Francua/burjak4.jpg",
+              "photo": "http://localhost:8000/media/photos/dwedwedwe.jpg",
               "city": {
                 "id": 1,
                 "name": "Kiev"
@@ -252,16 +257,130 @@ class InstitutionApiView(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         """
         return super(InstitutionApiView, self).retrieve(request, *args, **kwargs)
 
-    # def create(self, request, *args, **kwargs):
-    #
-    #     serializer = self.create_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     retrieve_serializer = self.serializer_class(data=serializer.data)
-    #     return Response(retrieve_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #
-    #     #return super(InstitutionApiView, self).create(request, *args, **kwargs)
+    def create(self, request, *args, **kwargs):
+        """
+            **Create institution api view**
+
+            **Required data**
+            <pre>
+                {
+                    "name": *str*,
+                    "city": *id*,
+                    "address": "str", blank = True
+                    "categories": [],
+                    "latitude": decimal,
+                    "longitude": decimal
+                }
+                example
+                {
+                    "name": "Cafe3",
+                    "city": 1,
+                    "address": "",
+                    "categories": [1],
+                    "latitude": 12.01,
+                    "longitude": 12.01
+                }
+            </pre>
+
+            **Success:** status_code: 201
+            <pre>
+                {
+                    "id": 2,
+                    "rank": 3,
+                    "institution": {
+                        "id": 5,
+                        "name": "Francua",
+                        "photo": "null",
+                        "city": {
+                            "id": 1,
+                            "name": "Kiev"
+                        },
+                        "address": "Kiev, Kiev",
+                        "categories": [
+                            {
+                                "id": 1,
+                                "name": "cafe"
+                            }
+                        ],
+                        "latitude": "0.0000000000",
+                        "longitude": "0.0000000000"
+                    }
+                }
+            </pre>
+
+            **Error:** status_code: 400
+
+            *Non-field errors*:
+            <pre>
+                {
+                    "non_field_errors": [
+                        "Validation errors",
+                         "Some validation error,
+                    ]
+                }
+            </pre>
+        """
+        return super(InstitutionApiView, self).create(request, *args, **kwargs)
+
+
+class UpdatePhotoInstitutionApiView(UpdateAPIView):
+
+    serializer_class = UpdatePhotoInstituteSerializer
+    permission_classes = (IsAuthenticated,)
+    filter_backends = (filters.SearchFilter, )
+    search_fields = ('name',)
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'user': self.request.user,
+        }
+
+    def get_queryset(self):
+        return Institution.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        """
+        ## Update Photo Institution
+        ####**Allowed Methods**:
+        ###### - PUT - PATCH
+
+        #### **PATCH**:
+        ###### URL: **/api/leisure/institution/{id}**
+
+        #### **EXAMPLE REQUEST**:
+        ```json
+            {
+                "temp_photo_id": "int"
+            }
+        ```
+
+        #### **SUCCESSFUL RESPONSE**:
+        ```json
+            {
+              "id": 2,
+              "name": "Francua",
+              "photo": "http://localhost:8000/media/photos/ewdwedw.jpg",
+              "city": {
+                "id": 1,
+                "name": "Kiev"
+              },
+              "address": "Kiev, Kiev",
+              "categories": [
+                {
+                  "id": 1,
+                  "name": "cafe"
+                }
+              ],
+              "latitude": "0.0000000000",
+              "longitude": "0.0000000000"
+            }
+            <*status code:* 200>
+        ```
+        <*status code:* 200>
+        """
+
+        return super(UpdatePhotoInstitutionApiView, self).update(request, *args, **kwargs)
 
 
 class CloserInstitutionApiView(CreateAPIView):
@@ -283,7 +402,7 @@ class CloserInstitutionApiView(CreateAPIView):
             {
                 "id": 5,
                 "name": "Francua",
-                "photo": "/media/photos/burjak3.jpg",
+                ""photo": "http://localhost:8000/media/photos/ewdewfer.jpg",
                 "city": {
                     "id": 1,
                     "name": "Kiev"
@@ -377,7 +496,7 @@ class LikeCreateApiView(CreateAPIView):
                 "institution": {
                     "id": 5,
                     "name": "Francua",
-                    "photo": "/media/photos/burjak3.jpg",
+                    "photo": "http://localhost:8000/media/photos/shoto.jpg",
                     "city": {
                         "id": 1,
                         "name": "Kiev"
@@ -522,3 +641,47 @@ class RadiusInstitutionApiView(CreateAPIView):
             return Response({"results": institution_ids}, status=status.HTTP_200_OK, headers=headers)
 
         return Response({"result": "No institution for return"}, status=status.HTTP_404_NOT_FOUND, headers=headers)
+
+
+class CreateTempPhotoApiView(CreateAPIView):
+    """
+        **Create temp Photo instanse**
+
+        **Required data**
+        <pre>
+            {
+            "photo": *binary*
+            }
+        </pre>
+
+        **Success:** status_code: 201
+        <pre>
+            {
+            "id": *int*,
+            "photo": *binary*
+            }
+        </pre>
+
+        **Error:** status_code: 400
+
+        *Non-field errors*:
+        <pre>
+            {
+                "non_field_errors": [
+                    "Validation errors"
+                ]
+            }
+        </pre>
+        """
+
+    serializer_class = TempPhotoSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_serializer_context(self):
+        return {
+            'request': self.request,
+            'user': self.request.user,
+        }
+
+    def create(self, request, *args, **kwargs):
+        return super(CreateTempPhotoApiView,self).create(request, *args, **kwargs)
