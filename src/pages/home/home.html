@@ -1,17 +1,150 @@
 <app class="home-page">
     <div class="container-fluid">
         <div class="row">
-            <div class="col-xs-12">
-                <h1>Angular 1.x Boilerplate</h1>
+            <div class="col-xs-12 col-md-8">
+                <ui-gmap-google-map center='$ctrl.map.center' zoom='$ctrl.map.zoom'>
+                    <ui-gmap-marker idKey='$ctrl.userMarker.id'
+                        coords='$ctrl.userMarker.coords'
+                        options='$ctrl.userMarker.options'
+                        events='$ctrl.userMarker.events'>
+                    </ui-gmap-marker>
+                    <ui-gmap-marker idKey='$ctrl.nearPlace.id'
+                        coords='$ctrl.nearPlace.coords'
+                        options='$ctrl.nearPlace.options'
+                        click='$ctrl.getInfo($ctrl.nearPlace.data)'>
+                    </ui-gmap-marker>
+                    <ui-gmap-marker ng-repeat="place in $ctrl.inRadius track by place.id"
+                        idKey='place.id'
+                        coords='place.coords'
+                        options='place.options'
+                        click='$ctrl.getInfo(place)'>
+                    </ui-gmap-marker>
+                    <ui-gmap-circle center='$ctrl.userMarker.coords'
+                        radius='$ctrl.radius.radius'
+                        fill='$ctrl.circle.fill'
+                        stroke='$ctrl.circle.stroke'
+                        clickable='true'
+                        draggable='true'
+                        editable='true'
+                        visible='true'>
+                    </ui-gmap-circle>
+                </ui-gmap-google-map>
+                <!-- <div class="info">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <img src={{$ctrl.modal.photo}}>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 id="modalName"></h4>
+                            (<span ng-repeat="category in $ctrl.modal.categories track by category.id">{{category.name}}</span>)
+                            <p>{{$ctrl.modal.city.name}}, {{$ctrl.modal.address}}</p>
+                        </div>
+                    </div>
+                </div> -->
             </div>
-            <div class="col-xs-12 col-md-6">
+            <div class="col-xs-12 col-md-4">
                 <div class="jumbotron">
-                    <h2>Features:</h2>
-                    <ul class="features-list">
-                        <li ng-repeat="feature in $ctrl.features">
-                            {{feature}}
-                        </li>
-                    </ul>
+                    <h2>Params</h2>
+                    <form>
+                        <h4>Find nearest place</h4>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select class="form-control" ng-model="$ctrl.near.category">
+                                <option ng-repeat="category in $ctrl.categories track by category.id"
+                                    value="{{category.id}}">{{category.name}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Min Rank</label>
+                            <select class="form-control" ng-model="$ctrl.near.minRank">
+                                <option selected value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <button type="button"
+                            name="button"
+                            class="btn btn-primary"
+                            ng-click="$ctrl.findNearestPlace($ctrl.$http, $ctrl.userMarker.coords, $ctrl.near)">
+                            The nearest place
+                        </button>
+                    </form>
+                    <form>
+                        <h4>Find places in radius</h4>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select class="form-control" ng-model="$ctrl.radius.category">
+                                <option ng-repeat="category in $ctrl.categories track by category.id"
+                                    value="{{category.id}}">{{category.name}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Min Rank</label>
+                            <select class="form-control" ng-model="$ctrl.radius.minRank">
+                                <option selected value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Radius</label>
+                            <input type="number" class="form-control" ng-model="$ctrl.radius.radius">
+                        </div>
+                        <button type="button"
+                            name="button"
+                            class="btn btn-primary"
+                            ng-click="$ctrl.findInRadius($ctrl.$http, $ctrl.userMarker.coords, $ctrl.radius)">
+                            Find places in radius
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="placeModal" tabindex="-1" role="dialog" aria-labelledby="placeModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body row">
+                    <div class="col-md-12">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <img id="modalPhoto" src="">
+                    </div>
+                    <div class="col-md-6">
+                        <h4 id="modalName"></h4>
+                        (<span id="modalCategory">{{category.name}}</span>)
+                        <p id="modalCity"></p>
+                        <p id="modalId"></p>
+                        <p id="modalAddress"></p>
+                        <div class="form-group">
+                            <label>Rank</label>
+                            <select class="form-control" ng-model="$ctrl.placeRank">
+                                <option selected value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                            <button type="button"
+                                name="button"
+                                class="btn btn-primary"
+                                ng-click="$ctrl.setRank($ctrl.$http, $ctrl.placeRank)">
+                                Rank
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

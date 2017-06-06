@@ -12,11 +12,12 @@
     "test:auto": "gulp test:auto"
   },
   "dependencies": {
+    "lodash": "^4.17.4",
+    "bootstrap-less": "^3.3.4",
     "angular": "^1.5.8",
     "angular-cookies": "1.5.8",
     "angular-mocks": "^1.5.8",
-    "angular-ui-router": "^1.5.8",
-    "bootstrap-less": "^3.3.4"
+    "angular-ui-router": "^1.5.8"
   },
   "devDependencies": {
     "autoprefixer": "^6.2.3",

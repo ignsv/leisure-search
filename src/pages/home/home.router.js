@@ -3,7 +3,7 @@ import homePage from 'home';
 import app from 'index';
 
 export default app.config(['$stateProvider', $stateProvider => {
-    $stateProvider.state('app', {
+    $stateProvider.state('home', {
         url: '/',
         component: 'homePage'
     });

@@ -23,7 +23,9 @@
                   <label for="signInPassword">Password</label>
                   <input type="password" class="form-control" id="signInPassword" placeholder="Password" ng-model="$ctrl.signIn.password">
                 </div>
-                <button type="submit" class="btn btn-success" ng-click="$ctrl.enter($ctrl.$http, $ctrl.signIn)">Sign In</button>
+                <button type="submit"
+                  class="btn btn-success"
+                  ng-click="$ctrl.enter($ctrl.$http, $ctrl.$state, $ctrl.signIn)">Sign In</button>
               </form>
             </div>
 
@@ -57,7 +59,9 @@
                   <label for="signUpPassword">Password</label>
                   <input type="password" class="form-control" id="signUpPassword" placeholder="Password" ng-model="$ctrl.newUser.password">
                 </div>
-                <button type="submit" class="btn btn-success" ng-click="$ctrl.registration($ctrl.$http, $ctrl.newUser)">Sign Up</button>
+                <button type="submit"
+                  class="btn btn-success"
+                  ng-click="$ctrl.registration($ctrl.$http, $ctrl.$state, $ctrl.newUser)">Sign Up</button>
               </form>
             </div>
           </div>
